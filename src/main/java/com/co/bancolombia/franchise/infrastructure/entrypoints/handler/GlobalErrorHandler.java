@@ -17,15 +17,15 @@ import java.time.LocalDateTime;
 public class GlobalErrorHandler {
 
     public Mono<ServerResponse> handlerError(Throwable error, ServerRequest request) {
-        log.error("Error procesando request a: {} - Error: {}", request.path(), error.getMessage(), error);
-
         return switch (error) {
             case BusinessException businessException -> handlerBusinessException(businessException, request);
-            default -> handlerGenericException(request);
+            default -> handlerGenericException(error, request);
         };
     }
 
     private Mono<ServerResponse> handlerBusinessException(BusinessException ex, ServerRequest request) {
+        log.warn("Business error en {}: {}", request.path(), ex.getMessage());
+
         GlobalResponse globalResponse = GlobalResponse.builder()
                 .message(ex.getMessage())
                 .timestamp(LocalDateTime.now())
@@ -38,7 +38,9 @@ public class GlobalErrorHandler {
                 .bodyValue(globalResponse);
     }
 
-    private Mono<ServerResponse> handlerGenericException(ServerRequest request) {
+    private Mono<ServerResponse> handlerGenericException(Throwable error, ServerRequest request) {
+        log.error("Error técnico procesando request a: {} - Error: {}", request.path(), error.getMessage(), error);
+
         GlobalResponse globalResponse = GlobalResponse.builder()
                 .message("Ha ocurrido un error procesando la solicitud")
                 .timestamp(LocalDateTime.now())

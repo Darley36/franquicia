@@ -20,11 +20,11 @@ public class FranchiseRepositoryAdapter implements FranchiseRepository {
 
     @Override
     public Mono<Franchise> saveFranchise(Franchise franchise) {
-        return Mono.error(new UnsupportedOperationException("Saving franchise is not supported yet"));
-        //return Mono.just(franchise)
-        //        .map(FranchiseMapperPercistence::toData)
-        //        .flatMap(repository::save)
-        //        .map(FranchiseMapperPercistence::toDomain);
+        log.info("Saving franchise: {}", franchise);
+        return Mono.just(franchise)
+                .map(FranchiseMapperPercistence::toData)
+                .flatMap(repository::save)
+                .map(FranchiseMapperPercistence::toDomain);
     }
 
     @Override

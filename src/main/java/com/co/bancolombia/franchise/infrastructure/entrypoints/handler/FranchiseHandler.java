@@ -30,7 +30,8 @@ public class FranchiseHandler {
         return request.bodyToMono(FranchiseRequestDto.class)
                 .map(FranchiseMapper::toDomain)
                 .flatMap(createFranchiseUseCase::createFranchise)
-                .flatMap(franchise -> ServerResponse.status(HttpStatus.CREATED).bodyValue(franchise))
+                .map(FranchiseMapper::toResponseDto)
+                .flatMap(franchiseDto -> ServerResponse.status(HttpStatus.CREATED).bodyValue(franchiseDto))
                 .onErrorResume(e -> globalErrorHandler.handlerError(e, request));
     }
 
