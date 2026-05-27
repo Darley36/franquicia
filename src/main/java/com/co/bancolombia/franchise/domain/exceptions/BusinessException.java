@@ -1,6 +1,6 @@
 package com.co.bancolombia.franchise.domain.exceptions;
 
-public class BusinessExeption extends ApplicationException{
+public class BusinessException extends ApplicationException{
 
     public enum Type {
         ERROR_MONGO("Error with the operations");
@@ -19,7 +19,7 @@ public class BusinessExeption extends ApplicationException{
 
     private final Type type;
 
-    public BusinessExeption(Type type, String exceptionInfo) {
+    public BusinessException(Type type, String exceptionInfo) {
         super(type.message.concat(" ").concat(exceptionInfo));
         this.type=type;
     }

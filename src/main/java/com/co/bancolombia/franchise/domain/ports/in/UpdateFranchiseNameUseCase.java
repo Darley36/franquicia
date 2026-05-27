@@ -3,6 +3,6 @@ package com.co.bancolombia.franchise.domain.ports.in;
 import com.co.bancolombia.franchise.domain.model.Franchise;
 import reactor.core.publisher.Mono;
 
-public interface CreateFranchiseUseCase {
-    Mono<Franchise> createFranchise(Franchise franchise);
+public interface UpdateFranchiseNameUseCase {
+    Mono<Franchise> updateName(String franchiseId, String name);
 }

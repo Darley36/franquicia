@@ -3,6 +3,6 @@ package com.co.bancolombia.franchise.domain.ports.in;
 import com.co.bancolombia.franchise.domain.model.Product;
 import reactor.core.publisher.Mono;
 
-public interface UpdateProductStockUseCase {
-    Mono<Product> updateStock(String branchId, String productId, int stock);
+public interface UpdateProductNameUseCase {
+    Mono<Product> updateName(String productId, String name);
 }
