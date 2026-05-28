@@ -1,5 +1,6 @@
 package com.co.bancolombia.franchise.domain.usecase;
 
+import com.co.bancolombia.franchise.domain.enums.TechnicalMessage;
 import com.co.bancolombia.franchise.domain.exceptions.BusinessException;
 import com.co.bancolombia.franchise.domain.model.Franchise;
 import com.co.bancolombia.franchise.domain.ports.in.CreateFranchiseUseCase;
@@ -22,7 +23,8 @@ public class CreateFranchiseUseCaseImpl implements CreateFranchiseUseCase {
                 .switchIfEmpty(Mono.error(new IllegalArgumentException("Franchise name cannot be empty")))
                 .flatMap(name -> franchiseRepository.findByName(name)
                         .flatMap(existingFranchise -> Mono.<Franchise>error(new BusinessException
-                                (BusinessException.Type.ERROR_MONGO,"Franchise with name '" + name + "' already exists")))
+                                (BusinessException.Type.ERROR_MONGO,
+                                        String.format(TechnicalMessage.FRANCHISE_EXISTS_MSG.getMessage(), name))))
                         .switchIfEmpty(franchiseRepository.saveFranchise(franchise))
                 );
     }

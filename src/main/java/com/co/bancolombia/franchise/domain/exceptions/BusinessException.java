@@ -3,7 +3,7 @@ package com.co.bancolombia.franchise.domain.exceptions;
 public class BusinessException extends ApplicationException{
 
     public enum Type {
-        ERROR_MONGO("Error with the operations.");
+        ERROR_MONGO("Error with the DB operations.");
 
         private final String message;
 

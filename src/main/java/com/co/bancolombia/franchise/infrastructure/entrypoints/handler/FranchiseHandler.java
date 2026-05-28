@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono;
 public class FranchiseHandler {
 
     private final CreateFranchiseUseCase createFranchiseUseCase;
-    //private final AddBranchUseCase addBranchUseCase;
+    private final AddBranchUseCase addBranchUseCase;
     //private final AddProductUseCase addProductUseCase;
     //private final DeleteProductUseCase deleteProductUseCase;
     //private final UpdateProductStockUseCase updateProductStockUseCase;
@@ -32,6 +32,17 @@ public class FranchiseHandler {
                 .flatMap(createFranchiseUseCase::createFranchise)
                 .map(FranchiseMapper::toResponseDto)
                 .flatMap(franchiseDto -> ServerResponse.status(HttpStatus.CREATED).bodyValue(franchiseDto))
+                .onErrorResume(e -> globalErrorHandler.handlerError(e, request));
+    }
+
+    // POST /api/franchises/{franchiseName}/branches
+    public Mono<ServerResponse> addBranch(ServerRequest request) {
+        String franchiseName = request.pathVariable("franchiseName");
+        return request.bodyToMono(BranchRequestDto.class)
+                .map(FranchiseMapper::toDomain)
+                .flatMap(branch -> addBranchUseCase.addBranch(franchiseName, branch))
+                .map(FranchiseMapper::toResponseDto)
+                .flatMap(branchDto -> ServerResponse.status(HttpStatus.CREATED).bodyValue(branchDto))
                 .onErrorResume(e -> globalErrorHandler.handlerError(e, request));
     }
 

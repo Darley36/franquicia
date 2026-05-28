@@ -2,8 +2,6 @@ package com.co.bancolombia.franchise.infrastructure.entrypoints;
 
 import com.co.bancolombia.franchise.infrastructure.entrypoints.handler.FranchiseHandler;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.RouterOperation;
 import org.springdoc.core.annotations.RouterOperations;
 import org.springframework.context.annotation.Bean;
@@ -48,14 +46,14 @@ public class FranchiseRouter {
         return RouterFunctions.route()
                 .POST("/api/franchises",
                         handler::createFranchise)
-                //.POST("/api/franchises/{franchiseId}/branches",
-                //        handler::addBranch)
-                //.POST("/api/branches/{branchId}/products",
-                //        handler::addProduct)
-                //.DELETE("/api/branches/{branchId}/products/{productId}",
-                //        handler::deleteProduct)
-                //.PATCH("/api/branches/{branchId}/products/{productId}/stock",
-                //        handler::updateProductStock)
+                .POST("/api/franchises/{franchiseName}/branches",
+                        handler::addBranch)
+               //.POST("/api/branches/{branchId}/products",
+               //        handler::addProduct)
+               //.DELETE("/api/branches/{branchId}/products/{productId}",
+               //        handler::deleteProduct)
+               //.PATCH("/api/branches/{branchId}/products/{productId}/stock",
+               //        handler::updateProductStock)
                 //.GET("/api/franchises/{franchiseId}/top-products",
                 //        handler::getTopProducts)
                 .build();
