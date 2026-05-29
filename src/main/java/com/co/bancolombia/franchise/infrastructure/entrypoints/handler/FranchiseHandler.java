@@ -16,9 +16,9 @@ public class FranchiseHandler {
 
     private final CreateFranchiseUseCase createFranchiseUseCase;
     private final AddBranchUseCase addBranchUseCase;
-    //private final AddProductUseCase addProductUseCase;
-    //private final DeleteProductUseCase deleteProductUseCase;
-    //private final UpdateProductStockUseCase updateProductStockUseCase;
+    private final AddProductUseCase addProductUseCase;
+    private final DeleteProductUseCase deleteProductUseCase;
+    private final UpdateProductStockUseCase updateProductStockUseCase;
     //private final FindMaxProductStockUseCase findMaxProductStockUseCase;
     //private final UpdateFranchiseNameUseCase updateFranchiseNameUseCase;
     //private final UpdateBranchNameUseCase updateBranchNameUseCase;
@@ -43,6 +43,18 @@ public class FranchiseHandler {
                 .flatMap(branch -> addBranchUseCase.addBranch(franchiseName, branch))
                 .map(FranchiseMapper::toResponseDto)
                 .flatMap(branchDto -> ServerResponse.status(HttpStatus.CREATED).bodyValue(branchDto))
+                .onErrorResume(e -> globalErrorHandler.handlerError(e, request));
+    }
+
+    // POST /api/branches/{branchId}/products
+    public Mono<ServerResponse> addProduct(ServerRequest request) {
+        String franchiseName = request.pathVariable("franchiseName");
+        String branchName = request.pathVariable("branchName");
+        return request.bodyToMono(ProductRequestDto.class)
+                .map(FranchiseMapper::toDomain)
+                .flatMap(product -> addProductUseCase.addProduct(franchiseName, branchName, product))
+                .map(FranchiseMapper::toResponseDto)
+                .flatMap(productDto -> ServerResponse.status(HttpStatus.CREATED).bodyValue(productDto))
                 .onErrorResume(e -> globalErrorHandler.handlerError(e, request));
     }
 

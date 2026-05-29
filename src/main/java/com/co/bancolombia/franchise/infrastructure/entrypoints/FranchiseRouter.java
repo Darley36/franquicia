@@ -48,12 +48,8 @@ public class FranchiseRouter {
                         handler::createFranchise)
                 .POST("/api/franchises/{franchiseName}/branches",
                         handler::addBranch)
-               //.POST("/api/branches/{branchId}/products",
-               //        handler::addProduct)
-               //.DELETE("/api/branches/{branchId}/products/{productId}",
-               //        handler::deleteProduct)
-               //.PATCH("/api/branches/{branchId}/products/{productId}/stock",
-               //        handler::updateProductStock)
+                .POST("/api/franchises/{franchiseName}/branches/{branchName}/products",
+                        handler::addProduct)
                 //.GET("/api/franchises/{franchiseId}/top-products",
                 //        handler::getTopProducts)
                 .build();

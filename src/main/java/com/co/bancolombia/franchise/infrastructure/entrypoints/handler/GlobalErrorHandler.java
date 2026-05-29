@@ -1,6 +1,8 @@
 package com.co.bancolombia.franchise.infrastructure.entrypoints.handler;
 
+import com.co.bancolombia.franchise.domain.exceptions.ApplicationException;
 import com.co.bancolombia.franchise.domain.exceptions.BusinessException;
+import com.co.bancolombia.franchise.domain.exceptions.ValidationException;
 import com.co.bancolombia.franchise.infrastructure.entrypoints.dto.GlobalResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -18,13 +20,21 @@ public class GlobalErrorHandler {
 
     public Mono<ServerResponse> handlerError(Throwable error, ServerRequest request) {
         return switch (error) {
-            case BusinessException businessException -> handlerBusinessException(businessException, request);
-            default -> handlerGenericException(error, request);
+            case ValidationException validationException -> handleExceptionWithHttpStatus(validationException, validationException.getHttpStatus(), request, "Field validation error");
+            case BusinessException businessException -> handleExceptionWithHttpStatus(businessException, businessException.getHttpStatus(), request, "Business error");
+            default -> handleExceptionWithHttpStatus(error, HttpStatus.INTERNAL_SERVER_ERROR, request, "Technical error");
         };
     }
 
-    private Mono<ServerResponse> handlerBusinessException(BusinessException ex, ServerRequest request) {
-        log.warn("Business error en {}: {}", request.path(), ex.getMessage());
+    private Mono<ServerResponse> handleExceptionWithHttpStatus(Throwable ex, HttpStatus httpStatus, ServerRequest request, String errorType) {
+        String logLevel = httpStatus.is5xxServerError() ? "error" : "warn";
+        String logMessage = String.format("%s en %s: %s", errorType, request.path(), ex.getMessage());
+
+        if ("error".equals(logLevel)) {
+            log.error(logMessage, ex);
+        } else {
+            log.warn(logMessage);
+        }
 
         GlobalResponse globalResponse = GlobalResponse.builder()
                 .message(ex.getMessage())
@@ -33,22 +43,7 @@ public class GlobalErrorHandler {
                 .build();
 
         return ServerResponse
-                .status(HttpStatus.CONFLICT)
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(globalResponse);
-    }
-
-    private Mono<ServerResponse> handlerGenericException(Throwable error, ServerRequest request) {
-        log.error("Error técnico procesando request a: {} - Error: {}", request.path(), error.getMessage(), error);
-
-        GlobalResponse globalResponse = GlobalResponse.builder()
-                .message("Ha ocurrido un error procesando la solicitud")
-                .timestamp(LocalDateTime.now())
-                .path(request.path())
-                .build();
-
-        return ServerResponse
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .status(httpStatus)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(globalResponse);
     }

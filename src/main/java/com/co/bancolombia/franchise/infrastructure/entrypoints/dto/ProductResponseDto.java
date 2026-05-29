@@ -21,6 +21,6 @@ public class ProductResponseDto {
     private String name;
 
     @Schema(description = "Product stock quantity")
-    private String stock;
+    private Integer stock;
 }
 

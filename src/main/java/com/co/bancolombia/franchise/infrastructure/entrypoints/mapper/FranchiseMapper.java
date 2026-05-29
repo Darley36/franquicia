@@ -30,7 +30,7 @@ public class FranchiseMapper {
     public static Product toDomain( ProductRequestDto dto) {
         return Product.builder()
                 .name(dto.getName())
-                .stock(dto.getStock() != null ? dto.getStock().toString() : null)
+                .stock(dto.getStock() != null ? dto.getStock() : null)
                 .build();
     }
 

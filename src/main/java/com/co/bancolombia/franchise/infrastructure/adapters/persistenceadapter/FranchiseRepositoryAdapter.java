@@ -3,6 +3,7 @@ package com.co.bancolombia.franchise.infrastructure.adapters.persistenceadapter;
 import com.co.bancolombia.franchise.domain.exceptions.BusinessException;
 import com.co.bancolombia.franchise.domain.model.Branch;
 import com.co.bancolombia.franchise.domain.model.Franchise;
+import com.co.bancolombia.franchise.domain.model.Product;
 import com.co.bancolombia.franchise.domain.ports.out.FranchiseRepository;
 import com.co.bancolombia.franchise.infrastructure.adapters.persistenceadapter.entity.FranchiseData;
 import com.co.bancolombia.franchise.infrastructure.adapters.persistenceadapter.mapper.FranchiseMapperPercistence;
@@ -56,6 +57,24 @@ public class FranchiseRepositoryAdapter implements FranchiseRepository {
                                 "Franchise not found"));
                     }
                     return Mono.just(branch);
+                });
+    }
+
+    @Override
+    public Mono<Product> addProductToBranch(String franchiseId, String branchId, Product product) {
+        log.info("Adding product: {} to branch with id: {} in franchise with id: {}", product, branchId, franchiseId);
+
+        Query query = Query.query(Criteria.where("id").is(franchiseId).and("branches.id").is(branchId));
+        Update update = new Update().push("branches.$.products", FranchiseMapperPercistence.toData(product));
+
+        return mongoTemplate.updateFirst(query, update, FranchiseData.class)
+                .flatMap(result -> {
+                    if (result.getModifiedCount() == 0) {
+                        return Mono.error(new BusinessException(
+                                BusinessException.Type.ERROR_MONGO,
+                                "Branch not found in franchise"));
+                    }
+                    return Mono.just(product);
                 });
     }
 

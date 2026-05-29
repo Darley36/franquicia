@@ -19,4 +19,9 @@ public class UseCaseConfig {
         return new AddBranchUseCaseImpl(franchiseRepository);
     }
 
+    @Bean
+    public AddProductUseCase addProductUseCase(FranchiseRepository franchiseRepository) {
+        return new AddProductUseCaseImpl(franchiseRepository);
+    }
+
 }
