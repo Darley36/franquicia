@@ -3,6 +3,7 @@ package com.co.bancolombia.franchise.infrastructure.entrypoints.mapper;
 import com.co.bancolombia.franchise.domain.model.Branch;
 import com.co.bancolombia.franchise.domain.model.Franchise;
 import com.co.bancolombia.franchise.domain.model.Product;
+import com.co.bancolombia.franchise.domain.model.TopProductPerBranch;
 import com.co.bancolombia.franchise.infrastructure.entrypoints.dto.*;
 
 import java.util.Collections;
@@ -69,6 +70,17 @@ public class FranchiseMapper {
                 .id(product.getId())
                 .name(product.getName())
                 .stock(product.getStock())
+                .build();
+    }
+
+    public static TopProductPerBranchResponseDto toResponseDto(TopProductPerBranch topProductPerBranch) {
+        if (topProductPerBranch == null) {
+            return null;
+        }
+
+        return TopProductPerBranchResponseDto.builder()
+                .branchName(topProductPerBranch.getBranchName())
+                .topProduct(toResponseDto(topProductPerBranch.getTopProduct()))
                 .build();
     }
 

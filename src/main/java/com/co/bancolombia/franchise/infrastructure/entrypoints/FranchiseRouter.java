@@ -26,19 +26,22 @@ public class FranchiseRouter {
         @RouterOperation(path = "/api/franchises",            method = RequestMethod.POST,
                 beanClass = FranchiseHandler.class, beanMethod = "createFranchise",
                 operation = @Operation(operationId = "createFranchise",   summary = "Create a new franchise",   tags = {"Franchise"})),
-        @RouterOperation(path = "/api/franchises/{franchiseId}/branches", method = RequestMethod.POST,
+        @RouterOperation(path = "/api/franchises/{franchiseName}", method = RequestMethod.GET,
+                beanClass = FranchiseHandler.class, beanMethod = "getFranchiseWithDetails",
+                operation = @Operation(operationId = "getFranchiseWithDetails", summary = "Get franchise with details including branches and products", tags = {"Franchise"})),
+        @RouterOperation(path = "/api/franchises/{franchiseName}/branches", method = RequestMethod.POST,
                 beanClass = FranchiseHandler.class, beanMethod = "addBranch",
                 operation = @Operation(operationId = "addBranch",          summary = "Add a branch to franchise", tags = {"Branch"})),
-        @RouterOperation(path = "/api/branches/{branchId}/products",      method = RequestMethod.POST,
+        @RouterOperation(path = "/api/franchises/{franchiseName}/branches/{branchName}/products", method = RequestMethod.POST,
                 beanClass = FranchiseHandler.class, beanMethod = "addProduct",
                 operation = @Operation(operationId = "addProduct",         summary = "Add a product to branch",   tags = {"Product"})),
-        @RouterOperation(path = "/api/branches/{branchId}/products/{productId}", method = RequestMethod.DELETE,
+        @RouterOperation(path = "/api/franchises/{franchiseName}/branches/{branchName}/products/{productName}", method = RequestMethod.DELETE,
                 beanClass = FranchiseHandler.class, beanMethod = "deleteProduct",
                 operation = @Operation(operationId = "deleteProduct",      summary = "Delete a product from branch", tags = {"Product"})),
-        @RouterOperation(path = "/api/branches/{branchId}/products/{productId}/stock", method = RequestMethod.PATCH,
+        @RouterOperation(path = "/api/franchises/{franchiseName}/branches/{branchName}/products/{productName}/stock", method = RequestMethod.PATCH,
                 beanClass = FranchiseHandler.class, beanMethod = "updateProductStock",
                 operation = @Operation(operationId = "updateProductStock", summary = "Update product stock",      tags = {"Product"})),
-        @RouterOperation(path = "/api/franchises/{franchiseId}/top-products", method = RequestMethod.GET,
+        @RouterOperation(path = "/api/franchises/{franchiseName}/top-products", method = RequestMethod.GET,
                 beanClass = FranchiseHandler.class, beanMethod = "getTopProducts",
                 operation = @Operation(operationId = "getTopProducts",     summary = "Top product per branch",    tags = {"Franchise"}))
     })
@@ -46,12 +49,18 @@ public class FranchiseRouter {
         return RouterFunctions.route()
                 .POST("/api/franchises",
                         handler::createFranchise)
+                .GET("/api/franchises/{franchiseName}",
+                        handler::getFranchiseWithDetails)
                 .POST("/api/franchises/{franchiseName}/branches",
                         handler::addBranch)
                 .POST("/api/franchises/{franchiseName}/branches/{branchName}/products",
                         handler::addProduct)
-                //.GET("/api/franchises/{franchiseId}/top-products",
-                //        handler::getTopProducts)
+                .DELETE("/api/franchises/{franchiseName}/branches/{branchName}/products/{productName}",
+                        handler::deleteProduct)
+                .PATCH("/api/franchises/{franchiseName}/branches/{branchName}/products/{productName}/stock",
+                        handler::updateProductStock)
+                .GET("/api/franchises/{franchiseName}/top-products",
+                        handler::getTopProducts)
                 .build();
     }
 }

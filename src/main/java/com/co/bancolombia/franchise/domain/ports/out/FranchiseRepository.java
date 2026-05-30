@@ -12,4 +12,6 @@ public interface FranchiseRepository {
     Mono<Branch> addBranchToFranchise(String franchiseId, Branch branch);
     Mono<Product> addProductToBranch(String franchiseId, String branchId, Product product);
     Flux<Franchise> findAll();
+    Mono<Void> deleteProductFromBranch(String franchiseId, String branchId, String productId);
+    Mono<Product> updateProductStock(String franchiseId, String branchId, String productId, int stock);
 }

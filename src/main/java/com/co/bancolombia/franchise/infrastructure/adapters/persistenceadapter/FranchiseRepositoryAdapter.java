@@ -84,4 +84,54 @@ public class FranchiseRepositoryAdapter implements FranchiseRepository {
         return repository.findAll()
                 .map(FranchiseMapperPercistence::toDomain);
     }
+
+    @Override
+    public Mono<Void> deleteProductFromBranch(String franchiseId, String branchId, String productId) {
+        log.info("Deleting product with id: {} from branch with id: {} in franchise with id: {}",
+                productId, branchId, franchiseId);
+
+        Query query = Query.query(Criteria.where("id").is(franchiseId)
+                .and("branches.id").is(branchId));
+        Update update = new Update().pull("branches.$.products", Query.query(Criteria.where("id").is(productId)));
+
+        return mongoTemplate.updateFirst(query, update, FranchiseData.class)
+                .filter(result -> result.getModifiedCount() > 0)
+                .switchIfEmpty(Mono.error(new BusinessException(
+                        BusinessException.Type.ERROR_MONGO,
+                        "Product not found or already deleted")))
+                .then();
+    }
+
+    @Override
+    public Mono<Product> updateProductStock(String franchiseId, String branchId, String productId, int stock) {
+        log.info("Updating product stock with id: {} in branch with id: {} in franchise with id: {} to: {}",
+                productId, branchId, franchiseId, stock);
+
+        Query query = Query.query(Criteria.where("_id").is(franchiseId)
+                .and("branches._id").is(branchId));
+
+        Update update = new Update().set("branches.$.products.$[elem].stock", stock);
+        update.filterArray(Criteria.where("elem._id").is(productId));
+
+        return mongoTemplate.updateFirst(query, update, FranchiseData.class)
+                .flatMap(result -> {
+                    if (result.getModifiedCount() == 0) {
+                        return Mono.error(new BusinessException(
+                                BusinessException.Type.ERROR_MONGO,
+                                "Product not found or stock unchanged"));
+                    }
+                    return mongoTemplate.findOne(
+                            Query.query(Criteria.where("_id").is(franchiseId)),
+                            FranchiseData.class);
+                })
+                .map(franchiseData -> franchiseData.getBranches().stream()
+                        .filter(b -> b.getId().equals(branchId))
+                        .flatMap(b -> b.getProducts().stream()
+                                .filter(p -> p.getId().equals(productId)))
+                        .findFirst()
+                        .map(FranchiseMapperPercistence::toDomain)
+                        .orElseThrow(() -> new BusinessException(
+                                BusinessException.Type.ERROR_MONGO,
+                                "Product not found after update")));
+    }
 }

@@ -19,10 +19,8 @@ public class FranchiseHandler {
     private final AddProductUseCase addProductUseCase;
     private final DeleteProductUseCase deleteProductUseCase;
     private final UpdateProductStockUseCase updateProductStockUseCase;
-    //private final FindMaxProductStockUseCase findMaxProductStockUseCase;
-    //private final UpdateFranchiseNameUseCase updateFranchiseNameUseCase;
-    //private final UpdateBranchNameUseCase updateBranchNameUseCase;
-    //private final UpdateProductNameUseCase updateProductNameUseCase;
+    private final FindMaxProductStockUseCase findMaxProductStockUseCase;
+    private final GetFranchiseWithDetailsUseCase getFranchiseWithDetailsUseCase;
     private final GlobalErrorHandler globalErrorHandler;
 
     // POST /api/franchises
@@ -46,7 +44,7 @@ public class FranchiseHandler {
                 .onErrorResume(e -> globalErrorHandler.handlerError(e, request));
     }
 
-    // POST /api/branches/{branchId}/products
+    // POST /api/franchises/{franchiseName}/branches/{branchName}/products
     public Mono<ServerResponse> addProduct(ServerRequest request) {
         String franchiseName = request.pathVariable("franchiseName");
         String branchName = request.pathVariable("branchName");
@@ -58,5 +56,45 @@ public class FranchiseHandler {
                 .onErrorResume(e -> globalErrorHandler.handlerError(e, request));
     }
 
+    // DELETE /api/franchises/{franchiseName}/branches/{branchName}/products/{productName}
+    public Mono<ServerResponse> deleteProduct(ServerRequest request) {
+        String franchiseName = request.pathVariable("franchiseName");
+        String branchName    = request.pathVariable("branchName");
+        String productName   = request.pathVariable("productName");
+        return deleteProductUseCase.deleteProduct(franchiseName, branchName, productName)
+                .then(ServerResponse.noContent().build())
+                .onErrorResume(e -> globalErrorHandler.handlerError(e, request));
+    }
+
+    // PATCH /api/franchises/{franchiseName}/branches/{branchName}/products/{productName}/stock
+    public Mono<ServerResponse> updateProductStock(ServerRequest request) {
+        String franchiseName = request.pathVariable("franchiseName");
+        String branchName    = request.pathVariable("branchName");
+        String productName   = request.pathVariable("productName");
+        return request.bodyToMono(StockUpdateDto.class)
+                .flatMap(stockDto -> updateProductStockUseCase.updateStock(franchiseName, branchName, productName, stockDto.getStock()))
+                .map(FranchiseMapper::toResponseDto)
+                .flatMap(productDto -> ServerResponse.ok().bodyValue(productDto))
+                .onErrorResume(e -> globalErrorHandler.handlerError(e, request));
+    }
+
+    // GET /api/franchises/{franchiseName}/top-products
+    public Mono<ServerResponse> getTopProducts(ServerRequest request) {
+        String franchiseName = request.pathVariable("franchiseName");
+        return findMaxProductStockUseCase.findTopProductPerBranch(franchiseName)
+                .map(FranchiseMapper::toResponseDto)
+                .collectList()
+                .flatMap(list -> ServerResponse.ok().bodyValue(list))
+                .onErrorResume(e -> globalErrorHandler.handlerError(e, request));
+    }
+
+    // GET /api/franchises/{franchiseName}
+    public Mono<ServerResponse> getFranchiseWithDetails(ServerRequest request) {
+        String franchiseName = request.pathVariable("franchiseName");
+        return getFranchiseWithDetailsUseCase.getFranchiseByName(franchiseName)
+                .map(FranchiseMapper::toResponseDto)
+                .flatMap(franchiseDto -> ServerResponse.ok().bodyValue(franchiseDto))
+                .onErrorResume(e -> globalErrorHandler.handlerError(e, request));
+    }
 
 }

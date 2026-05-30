@@ -24,4 +24,24 @@ public class UseCaseConfig {
         return new AddProductUseCaseImpl(franchiseRepository);
     }
 
+    @Bean
+    public DeleteProductUseCase deleteProductUseCase(FranchiseRepository franchiseRepository) {
+        return new DeleteProductUseCaseImpl(franchiseRepository);
+    }
+
+    @Bean
+    public UpdateProductStockUseCase updateProductStockUseCase(FranchiseRepository franchiseRepository) {
+        return new UpdateProductStockUseCaseImpl(franchiseRepository);
+    }
+
+    @Bean
+    public FindMaxProductStockUseCase findMaxProductStockUseCase(FranchiseRepository franchiseRepository) {
+        return new FindMaxProductStockUseCaseImpl(franchiseRepository);
+    }
+
+    @Bean
+    public GetFranchiseWithDetailsUseCase getFranchiseWithDetailsUseCase(FranchiseRepository franchiseRepository) {
+        return new GetFranchiseWithDetailsUseCaseImpl(franchiseRepository);
+    }
+
 }

@@ -18,14 +18,28 @@ public class CreateFranchiseUseCaseImpl implements CreateFranchiseUseCase {
     @Override
     public Mono<Franchise> createFranchise(Franchise franchise) {
         log.info("Creating franchise: {}", franchise);
-        return Mono.just(franchise.getName())
-                .map(String::trim)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Franchise name cannot be empty")))
-                .flatMap(name -> franchiseRepository.findByName(name)
-                        .flatMap(existingFranchise -> Mono.<Franchise>error(new BusinessException
-                                (BusinessException.Type.ERROR_MONGO,
-                                        String.format(TechnicalMessage.FRANCHISE_EXISTS_MSG.getMessage(), name))))
-                        .switchIfEmpty(franchiseRepository.saveFranchise(franchise))
+        return validateAndNormalizeName(franchise)
+                .flatMap(normalizedName -> franchiseRepository.findByName(normalizedName)
+                        .flatMap(existingFranchise -> {
+                            log.warn("Franchise with name {} already exists", normalizedName);
+                            return Mono.<Franchise>error(new BusinessException
+                                    (BusinessException.Type.ERROR_MONGO,
+                                            String.format(TechnicalMessage.FRANCHISE_EXISTS_MSG.getMessage(), normalizedName)));
+                        })
+                        .switchIfEmpty(franchiseRepository.saveFranchise(franchise.toBuilder().name(normalizedName).build()))
                 );
+    }
+
+    private Mono<String> validateAndNormalizeName(Franchise franchise) {
+        return Mono.defer(() -> {
+            if (franchise == null) {
+                return Mono.error(new IllegalArgumentException("Franchise cannot be null"));
+            }
+            String normalizedName = franchise.getName() != null ? franchise.getName().trim() : "";
+            if (normalizedName.isEmpty()) {
+                return Mono.error(new IllegalArgumentException("Franchise name cannot be empty"));
+            }
+            return Mono.just(normalizedName);
+        });
     }
 }
